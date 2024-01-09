@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,10 +34,13 @@ public class ShopController {
 	@GetMapping
 	public String index(Model model, @RequestParam(name = "name", required = false) Optional<String> name) {
 		Shop probe = new Shop();
+		List<Shop> shops = new ArrayList<>();
 		if (name.isPresent()) {
 			probe.setName(name.get());
+			shops = shopService.findAll(probe);
+		} else {
+			shops = shopService.findAll();
 		}
-		List<Shop> shops = shopService.findAll(probe);
 		model.addAttribute("listShop", shops);
 		model.addAttribute("name", name.isPresent() ? name.get() : null);
 		return "shop/index";

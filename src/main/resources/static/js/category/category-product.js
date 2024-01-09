@@ -33,9 +33,9 @@ $(document).ready(function () {
       }
     }
 
-    let postData = {
+    let postData = JSON.stringify({
       productIds: checkedIds,
-    };
+    });
 
     $.ajax({
       url: "/api/categories/" + categoryId + "/updateCategoryProduct",

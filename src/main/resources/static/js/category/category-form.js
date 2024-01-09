@@ -45,12 +45,24 @@ $(document).ready(function () {
           $(this).removeClass("is-invalid");
         }
       }
+
+      // descriptionのバリデーション
+      if (id === "description") {
+        let description = $(this).val();
+        if (description === "" || description.length >= 300) {
+          $(this).addClass("is-invalid");
+          isValid = false;
+        } else {
+          $(this).removeClass("is-invalid");
+        }
+        console.log(description.length);
+      }
     });
     return isValid;
   }
 
   function isPatternValid(code) {
-    let pattern = /^([A-Z]{3}[0-9]{3})$/;
+    let pattern = /[A-Z]{3}-[0-9]{3}/;
     return pattern.test(code);
   }
 });

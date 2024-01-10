@@ -104,6 +104,9 @@ public class CompanyController {
 			RedirectAttributes redirectAttributes) {
 		Company company = null;
 		try {
+			if (entity.getName() == null || entity.getName().length() == 0) {
+				throw new Exception();
+			}
 			company = companyService.save(entity);
 			redirectAttributes.addFlashAttribute("success", Message.MSG_SUCESS_INSERT);
 			return "redirect:/companies/" + company.getId();
@@ -160,7 +163,7 @@ public class CompanyController {
 	/**
 	 * 取引先情報の削除処理
 	 *
-	 * @param id 取引先ID
+	 * @param id                 取引先ID
 	 * @param redirectAttributes リダイレクト先に値を渡す
 	 * @return
 	 */

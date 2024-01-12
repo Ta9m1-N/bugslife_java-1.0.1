@@ -83,7 +83,11 @@
     </tbody>
   </table>
   <h4>収支合計 : <span th:text="${tAmountsSum}"></span>千円</h4>
-  <h4>収支比率 : <span th:text="${tAmountsRatio}"></span>%</h4>
+  <h4>
+    収支比率 : 
+    <span th:if="${tAmountsRatio != null}"><span th:text="${tAmountsRatio}"></span>%</span>
+    <span th:if="${tAmountsRatio == null}">収支の合計が0です。</span>
+  </h4>
 </th:block>
 
 </html>

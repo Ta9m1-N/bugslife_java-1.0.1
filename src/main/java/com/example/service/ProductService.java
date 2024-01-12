@@ -22,6 +22,8 @@ import com.example.entity.ProductWithCategoryName;
 import com.example.form.ProductForm;
 import com.example.form.ProductSearchForm;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +62,7 @@ public class ProductService {
 	// 指定された検索条件に一致するエンティティを検索する
 	public List<ProductWithCategoryName> search(Long shopId, ProductSearchForm form) {
 		final CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-		final CriteriaQuery<ProductWithCategoryName> query = builder.createQuery(ProductWithCategoryName.class);
+		final CriteriaQuery<Object[]> query = builder.createQuery(Object[].class);
 		final Root<Product> root = query.from(Product.class);
 
 		Join<Product, CategoryProduct> categoryProductJoin = root.joinList("categoryProducts", JoinType.LEFT);
@@ -73,7 +75,9 @@ public class ProductService {
 				root.get("weight"),
 				root.get("height"),
 				root.get("price"),
-				categoryJoin.get("name").alias("categoryName")).where(builder.equal(root.get("shopId"), shopId));
+				builder.function("GROUP_CONCAT", String.class, categoryJoin.get("name")))
+				.where(builder.equal(root.get("shopId"), shopId))
+				.groupBy(root.get("id"));
 
 		// formの値を元に検索条件を設定する
 		if (!StringUtils.isEmpty(form.getName())) {
@@ -120,7 +124,30 @@ public class ProductService {
 			query.where(builder.lessThanOrEqualTo(root.get("price"), form.getPrice2()));
 		}
 
-		return entityManager.createQuery(query).getResultList();
+		List<Object[]> resultList = entityManager.createQuery(query).getResultList();
+		List<ProductWithCategoryName> finalResultList = new ArrayList<>();
+
+		for (Object[] result : resultList) {
+			Long id = (Long)result[0];
+			String code = (String)result[1];
+			String name = (String)result[2];
+			Integer weight = (Integer)result[3];
+			Integer height = (Integer)result[4];
+			Double price = (Double)result[5];
+
+			List<String> categoryNames = new ArrayList<>();
+			if (result[6] != null) {
+				categoryNames = Arrays.asList((result[6].toString()).split(","));
+			} else {
+				categoryNames = null;
+			}
+
+			ProductWithCategoryName productWithCategoryName = new ProductWithCategoryName(
+					id, code, name, weight, height, price, categoryNames);
+			finalResultList.add(productWithCategoryName);
+		}
+
+		return finalResultList;
 	}
 
 	/**

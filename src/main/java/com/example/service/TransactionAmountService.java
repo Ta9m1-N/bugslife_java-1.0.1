@@ -135,8 +135,12 @@ public class TransactionAmountService {
 				expenseSum += tAmount.getPrice();
 			}
 		}
-		double ratio = incomSum / (expenseSum + incomSum);
-		return (int)Math.round(ratio * 100);
+		if ((expenseSum + incomSum) != 0) {
+			double ratio = incomSum / (expenseSum + incomSum);
+			return (int)Math.round(ratio * 100);
+		} else {
+			return null;
+		}
 	}
 
 	/**

@@ -41,6 +41,9 @@ public class ProductService {
 	@Autowired
 	private CategoryProductRepository categoryProductRepository;
 
+	@Autowired
+	private TaxService taxService;
+
 	public List<Product> findAll() {
 		return productRepository.findAll();
 	}
@@ -164,6 +167,7 @@ public class ProductService {
 				: new ArrayList<>();
 
 		Product product = new Product(entity);
+		product.setTaxType(taxService.findId(entity.getRate(), entity.getTaxIncluded(), entity.getRounding()));
 		productRepository.save(product);
 
 		// 未処理のカテゴリーIDのリスト

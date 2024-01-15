@@ -25,6 +25,17 @@ public class TaxService {
 		return taxRepoistory.findById(id);
 	}
 
+	public Long findId(Integer rate, Boolean included, Integer rounding) {
+		List<Tax> all = this.findAll();
+		for (Tax tax : all) {
+			if (tax.getRate().equals(rate) && tax.getIncluded().equals(included)
+					&& tax.getRounding().equals(rounding)) {
+				return tax.getId();
+			}
+		}
+		return null;
+	}
+
 	@Transactional(readOnly = false)
 	public Tax save(Tax entity) {
 		return taxRepoistory.save(entity);
@@ -33,5 +44,14 @@ public class TaxService {
 	@Transactional(readOnly = false)
 	public void delete(Tax entity) {
 		taxRepoistory.delete(entity);
+	}
+
+	@Transactional(readOnly = false)
+	public void updateInUse(Long taxId, boolean isIncrement) {
+		Tax tax = this.findOne(taxId).get();
+		Integer nowInUse = tax.getInUse();
+		Integer nextInUse = (isIncrement) ? nowInUse + 1 : nowInUse - 1;
+		tax.setInUse(nextInUse);
+		this.save(tax);
 	}
 }

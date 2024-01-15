@@ -46,7 +46,7 @@
 | rate     | Integer |    ○     |          |
 | included | Boolean |    ○     |          |
 | rounding | Integer |    ○     | Rounding |
-| in_use   | Boolean |    ○     |          |
+| in_use   | Integer |    ○     |          |
 
 ## 定数
 
@@ -54,6 +54,6 @@
 
 | ID  | Rounding |
 | --- | -------- |
-| 1   | Floor    |
-| 2   | Ceil     |
-| 3   | Round    |
+| 0   | Floor    |
+| 1   | Ceil     |
+| 2   | Round    |

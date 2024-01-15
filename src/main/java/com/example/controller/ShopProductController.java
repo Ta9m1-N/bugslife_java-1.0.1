@@ -19,14 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.constants.Message;
-import com.example.constants.TaxType;
 import com.example.entity.ProductWithCategoryName;
 import com.example.form.ProductForm;
 import com.example.form.ProductSearchForm;
 import com.example.model.Category;
 import com.example.model.Product;
+import com.example.model.Tax;
 import com.example.service.CategoryService;
 import com.example.service.ProductService;
+import com.example.service.TaxService;
 
 @Controller
 @RequestMapping("/shops/{shopId}/products")
@@ -36,8 +37,10 @@ public class ShopProductController {
 	private ProductService productService;
 
 	@Autowired
-	private CategoryService categoryService;
+	private TaxService taxService;
 
+	@Autowired
+	private CategoryService categoryService;
 
 	@GetMapping
 	public String index(Model model, @PathVariable("shopId") Long shopId, @ModelAttribute ProductSearchForm request) {
@@ -54,10 +57,11 @@ public class ShopProductController {
 	public String show(Model model, @PathVariable("shopId") Long shopId, @PathVariable("id") Long id) {
 		if (id != null) {
 			Optional<Product> product = productService.findOne(id);
+			Optional<Tax> tax = taxService.findOne(product.get().getTaxType());
 			List<Category> categories = categoryService.findAll();
 			model.addAttribute("categories", categories);
 			model.addAttribute("product", product.get());
-			model.addAttribute("tax", TaxType.get(product.get().getTaxType()));
+			model.addAttribute("tax", tax.get());
 			model.addAttribute("shopId", shopId);
 		}
 		return "shop_product/show";
@@ -73,7 +77,8 @@ public class ShopProductController {
 	}
 
 	@PostMapping
-	public String create(Model model, @PathVariable("shopId") Long shopId, @Validated @ModelAttribute ProductForm productForm,
+	public String create(Model model, @PathVariable("shopId") Long shopId,
+			@Validated @ModelAttribute ProductForm productForm,
 			BindingResult result, RedirectAttributes redirectAttributes) {
 		// バリデーションチェック
 		if (result.hasErrors()) {
@@ -87,6 +92,9 @@ public class ShopProductController {
 		Product product = null;
 		try {
 			product = productService.save(productForm);
+			Long taxId = taxService.findId(productForm.getRate(), productForm.getTaxIncluded(),
+					productForm.getRounding());
+			taxService.updateInUse(taxId, true);
 			redirectAttributes.addFlashAttribute("success", Message.MSG_SUCESS_INSERT);
 			return "redirect:/shops/{shopId}/products/" + product.getId();
 		} catch (Exception e) {
@@ -113,8 +121,9 @@ public class ShopProductController {
 	}
 
 	@PutMapping
-	public String update(Model model, @PathVariable("shopId") Long shopId, @Validated @ModelAttribute ProductForm productForm,
-			BindingResult result,RedirectAttributes redirectAttributes) {
+	public String update(Model model, @PathVariable("shopId") Long shopId,
+			@Validated @ModelAttribute ProductForm productForm,
+			BindingResult result, RedirectAttributes redirectAttributes) {
 		System.out.append(Message.MSG_ERROR, 0, 0);
 		// バリデーションチェック
 		if (result.hasErrors()) {
@@ -127,7 +136,14 @@ public class ShopProductController {
 
 		Product product = null;
 		try {
+			Long beforeTaxId = productService.findOne(productForm.getId()).get().getTaxType();
 			product = productService.save(productForm);
+			Long nextTaxId = taxService.findId(productForm.getRate(), productForm.getTaxIncluded(),
+					productForm.getRounding());
+			if (beforeTaxId != nextTaxId) {
+				taxService.updateInUse(beforeTaxId, false);
+				taxService.updateInUse(nextTaxId, true);
+			}
 			redirectAttributes.addFlashAttribute("success", Message.MSG_SUCESS_UPDATE);
 			return "redirect:/shops/{shopId}/products/" + product.getId();
 		} catch (Exception e) {
@@ -143,6 +159,7 @@ public class ShopProductController {
 			if (id != null) {
 				Optional<Product> entity = productService.findOne(id);
 				productService.delete(entity.get());
+				taxService.updateInUse(entity.get().getTaxType(), false);
 				redirectAttributes.addFlashAttribute("success", Message.MSG_SUCESS_DELETE);
 			}
 		} catch (Exception e) {

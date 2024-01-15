@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
+<th:block layout:fragment="content">
+  <h1>新規 税種追加</h1>
+  <hr />
+  <form th:action="@{/taxes}" th:method="@{'post'}" th:object="${tax}">
+    <div class="form-group">
+        <label for="name">税種名</label>
+        <input id="name" name="name" type="text" class="form-control" th:field="*{name}" />
+    </div>
+    <div class="form-group">
+        <label for="rate">税率(%)</label>
+        <input id="rate" name="rate" type="number" step="0.1" class="form-control" th:field="*{rate}" />
+    </div>
+
+    <button type="submit" class="btn btn-success">保存</button>
+    <a th:href="@{/taxes}" class="btn btn-default">戻る</a>
+  </form>
+</th:block>
+
+</html>

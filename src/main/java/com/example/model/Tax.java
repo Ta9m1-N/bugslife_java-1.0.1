@@ -36,5 +36,5 @@ public class Tax extends TimeEntity implements Serializable {
 	private Integer rounding;
 
 	@Column(name = "in_use", nullable = false)
-	private Boolean inUse;
+	private Integer inUse;
 }

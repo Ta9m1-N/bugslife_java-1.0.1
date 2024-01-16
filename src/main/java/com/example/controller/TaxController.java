@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,6 +35,15 @@ public class TaxController {
 		return "tax/index";
 	}
 
+	@GetMapping("/{id}")
+	public String show(Model model, @PathVariable("id") Long id) {
+		if (id != null) {
+			Optional<Tax> tax = taxService.findOne(id);
+			model.addAttribute("tax", tax.get());
+		}
+		return "tax/show";
+	}
+
 	@GetMapping(value = "/new")
 	public String create(Model model, @ModelAttribute Tax entity) {
 		model.addAttribute("tax", entity);
@@ -46,17 +54,15 @@ public class TaxController {
 	public String create(@ModelAttribute Tax entity, BindingResult result,
 			RedirectAttributes redirectAttributes) {
 		List<Tax> all = taxService.findAll();
-		Set<String> nameSet = new HashSet<>();
 		Set<Integer> rateSet = new HashSet<>();
 		for (Tax tax : all) {
-			nameSet.add(tax.getName());
 			rateSet.add(tax.getRate());
 		}
 		try {
 			if (entity.getName() == null || entity.getName().length() == 0 ||
 					entity.getRate() == null) {
 				throw new Exception();
-			} else if (nameSet.contains(entity.getName()) && rateSet.contains(entity.getRate())) {
+			} else if (rateSet.contains(entity.getRate())) {
 				throw new Exception();
 			}
 
@@ -94,8 +100,8 @@ public class TaxController {
 				}
 			}
 		} catch (Exception e) {
-			redirectAttributes.addFlashAttribute("error", Message.MSG_ERROR);
-			throw new ServiceException(e.getMessage());
+			redirectAttributes.addFlashAttribute("error", e.getMessage());
+			e.printStackTrace();
 		}
 		return "redirect:/taxes";
 	}

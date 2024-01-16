@@ -87,17 +87,17 @@
     <div class="form-group">
       <label for="rounding">端数処理</label>
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="rounding" id="rounding1" value="floor" th:field="*{rounding}"
+        <input class="form-check-input" type="radio" name="rounding" id="rounding1" value="0" th:field="*{rounding}"
           th:errorclass="is-invalid" />
         <label class="form-check-label" for="rounding1">切り捨て</label>
       </div>
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="rounding" id="rounding2" value="round" th:field="*{rounding}"
+        <input class="form-check-input" type="radio" name="rounding" id="rounding2" value="2" th:field="*{rounding}"
           th:errorclass="is-invalid" />
         <label class="form-check-label" for="rounding2">四捨五入</label>
       </div>
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" name="rounding" id="rounding3" value="ceil" th:field="*{rounding}"
+        <input class="form-check-input" type="radio" name="rounding" id="rounding3" value="1" th:field="*{rounding}"
           th:errorclass="is-invalid" />
         <label class="form-check-label" for="rounding3">切り上げ</label>
       </div>

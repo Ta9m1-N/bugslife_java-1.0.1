@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
+<th:block layout:fragment="content">
+  <h1>税種詳細</h1>
+  <hr />
+  <div class="form-group">
+    <label for="name">名前: </label>
+    <span th:text="${tax.name}"></span>
+  </div>
+  <div class="form-group">
+    <label for="rate">税率: </label>
+    <span th:text="${tax.rate}"></span><span> %</span>
+  </div>
+  <div class="form-group">
+    <label for="included">税込/税抜き: </label>
+    <span th:if="${tax.included}">税込</span>
+    <span th:if="${!tax.included}">税抜き</span>
+  </div>
+  <div class="form-group">
+    <label for="rounding">端数処理: </label>
+    <span th:if="${tax.rounding == 0}">切り捨て</span>
+    <span th:if="${tax.rounding == 1}">切り上げ</span>
+    <span th:if="${tax.rounding == 2}">四捨五入</span>
+  </div>
+  <div class="form-group">
+    <label for="inUse">使用数: </label>
+    <span th:text="${tax.inUse}"></span>
+  </div>
+
+  <form th:action="@{/taxes/{id}(id = ${tax.id})}" th:method="delete">
+    <button class="btn btn-link" type="submit">削除</button>
+  </form>
+  <a class="btn btn-link" th:href="@{/taxes}">一覧へ戻る</a>
+</th:block>
+
+</html>

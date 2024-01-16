@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout/layout}">
+<th:block layout:fragment="content">
+  <h1>List Tax</h1>
+  <hr />
+  <a class="btn btn-info" th:href="@{/taxes/new}">税種追加</a>
+  <br /><br />
+
+  <table calss="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Rate (%)</th>
+            <th>In Use</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="tax : ${listTax}">
+            <td th:text="${tax.name}"></td>
+            <td th:text="${tax.rate}"></td>
+            <td th:text="${tax.inUse}"></td>
+            <td>
+                <a class="btn btn-primary" th:href="@{/taxes/{id}(id = ${tax.id})}">参照</a>
+                <form class="d-inline" th:action="@{/taxes/{id}(id = ${tax.id})}" th:method="delete">
+                    <button class="btn btn-danger" type="submit">削除</button>
+                </form>
+            </td>
+        </tr>
+    </tbody>
+  </table>
+</th:block>
+
+</html>

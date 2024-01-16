@@ -3,7 +3,6 @@ package com.example.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.constants.TaxType;
 import com.example.enums.OrderStatus;
 import com.example.enums.PaymentStatus;
 import com.example.form.OrderForm;
@@ -27,6 +26,8 @@ public class OrderService {
 
 	@Autowired
 	private ProductRepository productRepository;
+
+	private TaxService taxService;
 
 	public List<Order> findAll() {
 		return orderRepository.findAll();
@@ -62,7 +63,7 @@ public class OrderService {
 			orderProduct.setQuantity(p.getQuantity());
 			orderProduct.setPrice((double)product.getPrice());
 			orderProduct.setDiscount(p.getDiscount());
-			orderProduct.setTaxType(TaxType.get(product.getTaxType()));
+			orderProduct.setTaxType(taxService.findOne(product.getTaxType()).get());
 			orderProducts.add(orderProduct);
 		});
 
@@ -87,9 +88,9 @@ public class OrderService {
 			}
 			// 端数処理
 			tax = switch (orderProduct.getTaxRounding()) {
-			case TaxType.ROUND -> Math.round(tax);
-			case TaxType.CEIL -> Math.ceil(tax);
-			case TaxType.FLOOR -> Math.floor(tax);
+			case 2 -> Math.round(tax);
+			case 1 -> Math.ceil(tax);
+			case 0 -> Math.floor(tax);
 			default -> tax;
 			};
 			var subTotal = price * quantity + tax - discount;

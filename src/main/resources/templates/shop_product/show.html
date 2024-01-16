@@ -33,20 +33,19 @@
   </div>
   <div class="form-group">
     <label for="rate">税率: </label>
-    <span th:if="${tax.rate == 10}">通常税率（10%）</span>
-    <span th:if="${tax.rate == 8}">軽減税率（8%）</span>
-    <span th:if="${tax.rate == 0}">非課税（0%）</span>
+    <span th:text="${tax.name}"></span>
+    <span th:text="${tax.rate}"></span><span>(%)</span>
   </div>
   <div class="form-group">
     <label for="taxIncluded">入力価格: </label>
-    <span th:if="${tax.taxIncluded == true}">税込価格</span>
-    <span th:if="${tax.taxIncluded == false}">税抜き価格</span>
+    <span th:if="${tax.included == true}">税込価格</span>
+    <span th:if="${tax.included == false}">税抜き価格</span>
   </div>
   <div class="form-group">
     <label for="rounding">端数処理: </label>
-    <span th:if="${tax.rounding == 'floor'}">切り捨て</span>
-    <span th:if="${tax.rounding == 'round'}">四捨五入</span>
-    <span th:if="${tax.rounding == 'ceil'}">切り上げ</span>
+    <span th:if="${tax.rounding == 0}">切り捨て</span>
+    <span th:if="${tax.rounding == 2}">四捨五入</span>
+    <span th:if="${tax.rounding == 1}">切り上げ</span>
   </div>
 
   <a class="btn btn-link" th:href="@{/shops/{shopId}/products/{id}/edit(shopId = ${shopId}, id = ${product.id})}">編集</a>

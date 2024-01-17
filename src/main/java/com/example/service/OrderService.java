@@ -37,6 +37,10 @@ public class OrderService {
 		return orderRepository.findById(id);
 	}
 
+	public List<Order> findByStatus(String status) {
+		return orderRepository.findByStatus(status);
+	}
+
 	@Transactional(readOnly = false)
 	public Order save(Order entity) {
 		return orderRepository.save(entity);

@@ -41,9 +41,6 @@ public class ProductService {
 	@Autowired
 	private CategoryProductRepository categoryProductRepository;
 
-	@Autowired
-	private TaxService taxService;
-
 	public List<Product> findAll() {
 		return productRepository.findAll();
 	}
@@ -160,14 +157,14 @@ public class ProductService {
 	 * @return
 	 */
 	@Transactional(readOnly = false)
-	public Product save(ProductForm entity) {
+	public Product save(ProductForm entity, Long taxId) {
 		// 紐づくカテゴリを事前に取得
 		List<CategoryProduct> categoryProducts = entity.getId() != null
 				? categoryProductRepository.findByProductId(entity.getId())
 				: new ArrayList<>();
 
 		Product product = new Product(entity);
-		product.setTaxType(taxService.findId(entity.getRate(), entity.getTaxIncluded(), entity.getRounding()));
+		product.setTaxType(taxId);
 		productRepository.save(product);
 
 		// 未処理のカテゴリーIDのリスト

@@ -70,13 +70,30 @@
               <input type="hidden" th:field="*{orderShippingList[__${st.index}__].deliveryTimezone}" />
             </td>
             <td>
-              <span class="badge text-bg-danger" th:if="${orderShipping.uploadStatus == 'error'}">エラー</span>
-              <span class="badge text-bg-success" th:if="${orderShipping.uploadStatus == 'success'}">成功</span>
+              <span class="badge text-bg-danger" th:if="${!orderShipping.uploadStatus}">エラー</span>
+              <span class="badge text-bg-success" th:if="${orderShipping.uploadStatus}">成功</span>
             </td>
           </tr>
         </tbody>
       </table>
     </form>
+  </div>
+  <div th:if="${orderShippingData == null && orders.size() > 0}">
+    <h3>未発送受注 一覧</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>受注ID</th>
+          <th>ステータス</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="order : ${orders}">
+          <td th:text="${order.id}"></td>
+          <td th:text="${order.status}"></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </th:block>
 

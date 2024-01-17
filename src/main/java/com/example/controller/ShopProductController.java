@@ -91,9 +91,9 @@ public class ShopProductController {
 
 		Product product = null;
 		try {
-			product = productService.save(productForm);
 			Long taxId = taxService.findId(productForm.getRate(), productForm.getTaxIncluded(),
 					productForm.getRounding());
+			product = productService.save(productForm, taxId);
 			taxService.updateInUse(taxId, true);
 			redirectAttributes.addFlashAttribute("success", Message.MSG_SUCESS_INSERT);
 			return "redirect:/shops/{shopId}/products/" + product.getId();
@@ -137,9 +137,9 @@ public class ShopProductController {
 		Product product = null;
 		try {
 			Long beforeTaxId = productService.findOne(productForm.getId()).get().getTaxType();
-			product = productService.save(productForm);
 			Long nextTaxId = taxService.findId(productForm.getRate(), productForm.getTaxIncluded(),
 					productForm.getRounding());
+			product = productService.save(productForm, nextTaxId);
 			if (beforeTaxId != nextTaxId) {
 				taxService.updateInUse(beforeTaxId, false);
 				taxService.updateInUse(nextTaxId, true);

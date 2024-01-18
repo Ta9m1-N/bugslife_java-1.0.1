@@ -41,6 +41,10 @@ public class OrderService {
 		return orderRepository.findByStatus(status);
 	}
 
+	public List<Order> findByPaymentStatusNot(String paymentStatus) {
+		return orderRepository.findByPaymentStatusNot(paymentStatus);
+	}
+
 	@Transactional(readOnly = false)
 	public Order save(Order entity) {
 		return orderRepository.save(entity);

@@ -14,12 +14,14 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.constants.Message;
+import com.example.form.OrderForm;
 import com.example.form.OrderPaymentsData;
 import com.example.model.Order;
 import com.example.model.OrderPayment;
@@ -43,6 +45,42 @@ public class OrderPaymentController {
 		List<Order> orders = orderService.findByPaymentStatusNot("paid");
 		model.addAttribute("orders", orders);
 		return "order/paying";
+	}
+
+	@PutMapping
+	public String update(@ModelAttribute("orderPaymentsData") OrderPaymentsData orderPaymentsData,
+			RedirectAttributes redirectAttributes) {
+		try {
+			OrderPayment[] orderPayments = orderPaymentsData.getOrderPayments();
+			for (OrderPayment orderPayment : orderPayments) {
+				Order order = orderService.findOne(orderPayment.getOrderId()).get();
+				if (orderPayment.getMethod().equals("credit_card")) {
+					String orderStatus = order.getStatus();
+					if (orderStatus.equals("ordered")) {
+						orderPayment.setType("credit");
+					} else if (orderStatus.equals("shipped")) {
+						orderPayment.setType("complete");
+					} else {
+						continue;
+					}
+				} else if (orderPayment.getMethod().equals("deffered_payment")) {
+					if (!orderPayment.getType().equals("pronpt") && !orderPayment.getType().equals("complete")) {
+						continue;
+					}
+				}
+				OrderForm.CreatePayment createPayment = orderPayment.changeClass(new OrderForm.CreatePayment());
+				orderService.createPayment(createPayment);
+				if (order.getStatus().equals("shipped") && order.getPaymentStatus().equals("paid")) {
+					order.setStatus("completed");
+					orderService.save(order);
+				}
+			}
+			redirectAttributes.addFlashAttribute("success", Message.MSG_SUCESS_UPDATE);
+		} catch (Exception e) {
+			redirectAttributes.addFlashAttribute("error", Message.MSG_ERROR);
+			e.getStackTrace();
+		}
+		return "redirect:/orders/paying";
 	}
 
 	@PostMapping("/download")
@@ -98,6 +136,7 @@ public class OrderPaymentController {
 				return "redirect:/orders/paying";
 			}
 			OrderPayment orderPayment = new OrderPayment();
+			orderPayment.setOrderId(orderId);
 			orderPayment.setType(type);
 			orderPayment.setPaid(paid);
 			Order order = orderService.findOne(orderId).get();

@@ -6,9 +6,10 @@
   <hr />
   <a th:href="@{/orders}" class="btn btn-default">Back</a><br /><br />
 
-  <table>
+  <table class="table">
     <thead>
         <tr>
+            <th>受注ID</th>
             <th>リンク</th>
             <th>金額</th>
             <th>状態</th>
@@ -17,6 +18,7 @@
     </thead>
     <tbody>
         <tr th:each="order : ${orders}">
+            <td th:text="${order.id}"></td>
             <td>
                 <a th:href="@{/orders/{id}(id=${order.id})}" th:method="get">詳細ページへ</a>
             </td>
@@ -48,8 +50,8 @@
     <label class="text-danger" th:text="${error}"></label>
   </div>
 
-  <div th:if="${orderPayments}">
-    <form th:action="@{/order/paying}" th:method="put" th:object="${orderPaymentsData}">
+  <div th:if="${orderPaymentsData}">
+    <form th:action="@{/orders/paying}" th:method="'put'" th:object="${orderPaymentsData}">
         <button type="submit" class="btn btn-success">入金</button>
         <table class="table">
             <thead>
@@ -73,6 +75,9 @@
                         <th:block th:text="${orderPayment.paid}"></th:block>
                         <input type="hidden" th:field="*{orderPayments[__${st.index}__].paid}" />
                     </td>
+                    <input type="hidden" th:field="*{orderPayments[__${st.index}__].id}" />
+                    <input type="hidden" th:field="*{orderPayments[__${st.index}__].method}" />
+                    <input type="hidden" th:field="*{orderPayments[__${st.index}__].paidAt}" />
                 </tr>
             </tbody>
         </table>

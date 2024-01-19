@@ -23,6 +23,11 @@ public class OrderPaymentService {
 	private OrderPaymentRepository orderPaymentRepository;
 
 	@Transactional(readOnly = false)
+	public OrderPayment save(OrderPayment orderPayment) {
+		return orderPaymentRepository.save(orderPayment);
+	}
+
+	@Transactional(readOnly = false)
 	public List<String[]> importCSV(MultipartFile file) throws RuntimeException {
 		try (BufferedReader br = new BufferedReader(
 				new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {

@@ -9,6 +9,7 @@ import com.example.form.OrderForm;
 import com.example.model.Order;
 import com.example.model.OrderPayment;
 import com.example.model.OrderProduct;
+import com.example.repository.OrderPaymentRepository;
 import com.example.repository.OrderRepository;
 import com.example.repository.ProductRepository;
 
@@ -23,6 +24,9 @@ public class OrderService {
 
 	@Autowired
 	private OrderRepository orderRepository;
+
+	@Autowired
+	private OrderPaymentRepository orderPaymentRepository;
 
 	@Autowired
 	private ProductRepository productRepository;
@@ -134,21 +138,38 @@ public class OrderService {
 		payment.setPaid(entity.getPaid());
 		payment.setMethod(entity.getMethod());
 		payment.setPaidAt(entity.getPaidAt());
+		payment.setOrderId(entity.getOrderId());
+		OrderPayment orderPayment = orderPaymentRepository.findByOrderId(payment.getOrderId()).get();
 
 		/**
 		 * 支払い情報を更新する
 		 */
-		// orderのorderPaymentsに追加
-		order.getOrderPayments().add(payment);
-		// 支払い済み金額を計算
-		var paid = order.getOrderPayments().stream().mapToDouble(p -> p.getPaid()).sum();
-		// 合計金額から支払いステータスを判定
-		var paymentStatus = paid > order.getGrandTotal() ? PaymentStatus.OVERPAID
-				: paid < order.getGrandTotal() ? PaymentStatus.PARTIALLY_PAID : PaymentStatus.PAID;
+		if (payment.getType().equals("complete")) {
+			// orderのorderPaymentsに追加
+			if (orderPayment == null) {
+				order.getOrderPayments().add(payment);
+			} else {
+				orderPayment.setPaid(payment.getPaid() + orderPayment.getPaid());
+				orderPayment.setType("complete");
+				orderPaymentRepository.save(orderPayment);
+			}
+			// 支払い済み金額を計算
+			var paid = order.getOrderPayments().stream().mapToDouble(p -> p.getPaid()).sum();
+			// 合計金額から支払いステータスを判定
+			var paymentStatus = paid > order.getGrandTotal() ? PaymentStatus.OVERPAID
+					: paid < order.getGrandTotal() ? PaymentStatus.PARTIALLY_PAID : PaymentStatus.PAID;
 
-		// 更新
-		order.setPaid(paid);
-		order.setPaymentStatus(paymentStatus);
+			// 更新
+			order.setPaid(paid);
+			order.setPaymentStatus(paymentStatus);
+		} else {
+			if (orderPayment == null) {
+				orderPaymentRepository.save(payment);
+			} else {
+				orderPayment.setPaid(payment.getPaid() + orderPayment.getPaid());
+				orderPaymentRepository.save(orderPayment);
+			}
+		}
 		orderRepository.save(order);
 	}
 

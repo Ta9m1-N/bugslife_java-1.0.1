@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.lang.String;
 import java.sql.Timestamp;
 
+import com.example.form.OrderForm;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,4 +38,16 @@ public class OrderPayment extends TimeEntity implements Serializable {
 
 	@Column(name = "paid_at", nullable = false)
 	private Timestamp paidAt;
+
+	@Column(name = "order_id")
+	private Long orderId;
+
+	public OrderForm.CreatePayment changeClass(OrderForm.CreatePayment createPayment) {
+		createPayment.setOrderId(orderId);
+		createPayment.setType(type);
+		createPayment.setMethod(method);
+		createPayment.setPaid(paid);
+		createPayment.setPaidAt(paidAt);
+		return createPayment;
+	}
 }

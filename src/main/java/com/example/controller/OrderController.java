@@ -39,7 +39,7 @@ public class OrderController {
 
 	@GetMapping
 	public String index(Model model) {
-		List<Order> all = orderService.findAll();
+		List<Order> all = orderService.findIndex();
 		model.addAttribute("listOrder", all);
 		return "order/index";
 	}

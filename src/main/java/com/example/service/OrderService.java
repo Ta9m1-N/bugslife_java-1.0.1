@@ -12,6 +12,7 @@ import com.example.model.OrderProduct;
 import com.example.repository.OrderPaymentRepository;
 import com.example.repository.OrderRepository;
 import com.example.repository.ProductRepository;
+import com.example.repository.TaxRepoistory;
 
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -31,10 +32,41 @@ public class OrderService {
 	@Autowired
 	private ProductRepository productRepository;
 
-	private TaxService taxService;
+	@Autowired
+	private TaxRepoistory taxRepoistory;
 
 	public List<Order> findAll() {
 		return orderRepository.findAll();
+	}
+
+	public List<Order> findIndex() {
+		List<Object[]> objectsList = orderRepository.findIndex();
+		List<Order> orders = new ArrayList<>();
+		for (Object[] objects : objectsList) {
+			Order order = new Order();
+			order.setId(Long.parseLong(objects[0].toString()));
+			order.setCustomerId(Integer.parseInt(objects[1].toString()));
+			order.setDiscount(Double.parseDouble(objects[2].toString()));
+			order.setShipping(Double.parseDouble(objects[3].toString()));
+			order.setTax(Double.parseDouble(objects[4].toString()));
+			order.setTotal(Double.parseDouble(objects[5].toString()));
+			order.setGrandTotal(Double.parseDouble(objects[6].toString()));
+			order.setStatus(objects[7].toString());
+			order.setPaymentMethod(objects[8].toString());
+			order.setPaymentStatus(objects[9].toString());
+			order.setPaid(Double.parseDouble(objects[10].toString()));
+			order.setNote(objects[11].toString());
+
+			OrderProduct orderProduct = new OrderProduct();
+			orderProduct.setName(objects[12].toString());
+			orderProduct.setQuantity(Integer.parseInt(objects[13].toString()));
+			List<OrderProduct> orderProducts = new ArrayList<>();
+			orderProducts.add(orderProduct);
+
+			order.setOrderProducts(orderProducts);
+			orders.add(order);
+		}
+		return orders;
 	}
 
 	public Optional<Order> findOne(Long id) {
@@ -73,9 +105,9 @@ public class OrderService {
 			orderProduct.setCode(product.getCode());
 			orderProduct.setName(product.getName());
 			orderProduct.setQuantity(p.getQuantity());
-			orderProduct.setPrice((double)product.getPrice());
+			orderProduct.setPrice(product.getPrice());
 			orderProduct.setDiscount(p.getDiscount());
-			orderProduct.setTaxType(taxService.findOne(product.getTaxType()).get());
+			orderProduct.setTaxType(taxRepoistory.findById(product.getTaxType()).get());
 			orderProducts.add(orderProduct);
 		});
 

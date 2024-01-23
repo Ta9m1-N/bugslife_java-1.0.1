@@ -10,6 +10,7 @@ import java.util.Optional;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,11 +23,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.constants.Message;
 import com.example.model.Company;
+import com.example.model.FileImportInfo;
 import com.example.model.TransactionAmount;
 import com.example.service.CompanyService;
 import com.example.service.TransactionAmountService;
@@ -206,15 +209,16 @@ public class TransactionAmountController {
 			return redirectUrl;
 		}
 
+		FileImportInfo result;
 		// csvファイルのインポート処理
 		try {
-			transactionAmountService.importCSV(csvFile, companyId);
+			result = transactionAmountService.importCSV(csvFile, companyId);
 		} catch (Throwable t) {
 			redirectAttributes.addFlashAttribute("error", t.getMessage());
 			t.printStackTrace();
 			return redirectUrl;
 		}
-
+		redirectAttributes.addFlashAttribute("importResult", result.getStatus().getValue());
 		return redirectUrl;
 	}
 

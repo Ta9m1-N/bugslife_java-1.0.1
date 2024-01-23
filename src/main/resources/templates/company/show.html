@@ -36,7 +36,10 @@
   <br />
   <h1>取引金額一覧</h1>
   <hr />
-  <a class="btn btn-info" th:href="@{/transactionAmounts/{c_id}/new(c_id = ${company.id})}">取引金額 新規追加</a><br /><br />
+  <a class="btn btn-info" th:href="@{/transactionAmounts/{c_id}/new(c_id = ${company.id})}">取引金額 新規追加</a>
+  <span>取引金額CSV: </span>
+  <span th:if="${importResult != null}" th:text="${importResult}"></span>
+  <span th:if="${importResult == null}">無し</span><br /><br />
 
   <div class="row">
     <form th:method="post" th:action="@{/transactionAmounts/{c_id}/upload_csv(c_id = ${company.id})}"

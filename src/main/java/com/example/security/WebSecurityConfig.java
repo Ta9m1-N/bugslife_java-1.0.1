@@ -2,6 +2,7 @@ package com.example.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -25,6 +26,10 @@ public class WebSecurityConfig {
 				.authorizeHttpRequests((requests) -> requests
 						.requestMatchers("/", "/css/**", "js/**", "/image/**").permitAll()
 						.requestMatchers("/*.ico").permitAll()
+						.requestMatchers(HttpMethod.POST, "/transactionAmounts").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.PUT, "/transactionAmounts").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.DELETE, "/transactionAmounts/{id}").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.POST, "/transactionAmounts/{c_id}/upload_csv").hasRole("ADMIN")
 						.anyRequest().authenticated())
 				.formLogin((form) -> form
 						.loginPage("/auth/login")

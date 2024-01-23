@@ -2,6 +2,7 @@ package com.example.service;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.example.constants.Validate;
@@ -20,9 +21,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Transactional(readOnly = true)
@@ -153,7 +156,7 @@ public class TransactionAmountService {
 	 * @todo 非同期化
 	 */
 	@Transactional
-	public void importCSV(MultipartFile file, Long companyId) throws Exception {
+	public FileImportInfo importCSV(MultipartFile file, Long companyId) throws Exception {
 		// アップデート後のインスタンス
 		FileImportInfo updatedImp;
 		SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -174,12 +177,13 @@ public class TransactionAmountService {
 			e.printStackTrace();
 			throw e;
 		}
-
 		// CSVファイルの読み込み
 		try (BufferedReader br = new BufferedReader(
 				new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
 			String line;
 			int lineCouter = 0;
+			List<CompletableFuture<Void>> futures = new ArrayList<>();
+			CompletableFuture<Void> future = new CompletableFuture<>();
 			while ((line = br.readLine()) != null) {
 				// 行数カウントアップ
 				lineCouter++;
@@ -192,31 +196,48 @@ public class TransactionAmountService {
 				// csvなのでカンマ区切りで分割する
 				final String[] split = line.replace("\"", "").split(",");
 
-				// 取引金額のインスタンスを生成
-				TransactionAmount transactionAmount = new TransactionAmount();
-				transactionAmount.setCompanyId(companyId);
+				future = CompletableFuture.runAsync(() -> {
+					try {
+						// 取引金額のインスタンスを生成
+						TransactionAmount transactionAmount = new TransactionAmount();
+						transactionAmount.setCompanyId(companyId);
 
-				// 取引金額のインスタンスにCSVファイルから読み取ったデータをセットする
-				transactionAmount.setPlusMinus(BooleanUtils.toBoolean(split[0]));
-				transactionAmount.setPrice(Integer.parseInt(split[1]));
-				transactionAmount.setDueDate(sdFormat.parse(split[2]));
-				transactionAmount.setHasPaid(Boolean.parseBoolean(split[3]));
-				transactionAmount.setMemo(split[4]);
+						// 取引金額のインスタンスにCSVファイルから読み取ったデータをセットする
+						transactionAmount.setPlusMinus(BooleanUtils.toBoolean(split[0]));
+						transactionAmount.setPrice(Integer.parseInt(split[1]));
+						transactionAmount.setDueDate(sdFormat.parse(split[2]));
+						transactionAmount.setHasPaid(Boolean.parseBoolean(split[3]));
+						transactionAmount.setMemo(split[4]);
 
-				// 取引金額を保存する
-				transactionAmountRepository.save(transactionAmount);
+						// 取引金額を保存する
+						transactionAmountRepository.save(transactionAmount);
+					} catch (Exception e) {
+						updatedImp.setStatus(FileImportStatus.ERROR);
+						e.printStackTrace();
+					}
+				});
+				futures.add(future);
 			}
-			updatedImp.setStatus(FileImportStatus.COMPLETE);
+			CompletableFuture<Void> allOf = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+			allOf.thenApply(ignoredResult -> {
+				if (updatedImp.getStatus().getCode() != 2) {
+					updatedImp.setStatus(FileImportStatus.COMPLETE);
+				}
+				// 取込完了日時をセットして処理終了
+				updatedImp.setEndDatetime(LocalDateTime.now());
+				fileImportInfoRepository.save(updatedImp);
+				return updatedImp;
+			});
+			// 少量のデータでも完了ステータスにならないため待機時間を設定(0.01秒)
+			Thread.sleep(10);
+			return updatedImp;
 		} catch (Exception e) {
 			// 失敗の場合、ステータスをエラーにする
 			updatedImp.setStatus(FileImportStatus.ERROR);
+			fileImportInfoRepository.save(updatedImp);
 			// エラーはコントローラーで処理
 			e.printStackTrace();
-			throw e;
-		} finally {
-			// 取込完了日時をセットして処理終了
-			updatedImp.setEndDatetime(LocalDateTime.now());
-			fileImportInfoRepository.save(updatedImp);
+			return updatedImp;
 		}
 	}
 }

@@ -3,6 +3,8 @@ package com.example.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.form.UserSearchForm;
@@ -30,6 +32,13 @@ public class UserService {
 	@Autowired
 	private DeletedUserRepository deletedUserRepository;
 
+	private final PasswordEncoder passwordEncoder;
+
+	@Autowired
+	public UserService() {
+		passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+	}
+
 	public List<User> findAll() {
 		return userRepository.findAll();
 	}
@@ -43,10 +52,11 @@ public class UserService {
 	 */
 	@Transactional(readOnly = false)
 	public User save(User entity) {
+		String hashedPassword = passwordEncoder.encode(entity.getPassword());
 		/**
 		 * パスワードをjavaの暗号化方式を付与する
 		 */
-		entity.setPassword("{noop}" + entity.getPassword());
+		entity.setPassword(hashedPassword);
 		return userRepository.save(entity);
 	}
 

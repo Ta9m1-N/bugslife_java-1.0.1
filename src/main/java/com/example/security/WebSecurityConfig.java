@@ -26,6 +26,7 @@ public class WebSecurityConfig {
 				.authorizeHttpRequests((requests) -> requests
 						.requestMatchers("/", "/css/**", "js/**", "/image/**").permitAll()
 						.requestMatchers("/*.ico").permitAll()
+						.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.POST, "/transactionAmounts").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/transactionAmounts").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/transactionAmounts/{id}").hasRole("ADMIN")
